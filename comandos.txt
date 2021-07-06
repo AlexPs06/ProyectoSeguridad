@@ -1,0 +1,4 @@
+comandos
+openssl genrsa -out rsa_1024_priv.pem 1024 genera una llave privada de RSA de 1024
+
+openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem obtiene la llave publica de un RSA de 1024
