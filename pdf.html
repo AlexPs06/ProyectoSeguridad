@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PDF HTML</title>
+    <!-- jQuery library -->
+    <script
+			  src="https://code.jquery.com/jquery-3.6.0.min.js"
+			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+    <script type="text/javascript">
+      function generatePDF(){
+        var doc = new jsPDF();
+        var elementHTML = $('#contenido').html();
+
+        var specialElementHandlers = { 
+            '#elementH' :function(element, renderer){
+                return true;
+            }
+        };
+
+        doc.setFont("helvetica");
+        doc.setFontType("bold");
+        doc.text(70,20, 'Novus Ordo Seclorum');
+        doc.text(20,30, 'Juro solemnemente que mis intenciones no son buenas.');
+        doc.fromHTML(elementHTML, 20, 40, {
+          'width': 170,
+          'elementHandlers' : specialElementHandlers
+        });
+        doc.save('document.pdf');
+      }
+    </script>  
+      <H1>Escribe lo que quieres firmar</H1>
+
+      <textarea id="contenido" name="textarea" rows="10" cols="50">Escribe lo que quieres firmar</textarea> 
+      <button onclick=generatePDF()> Generar PDF</button>
+  </body>
+</html>
