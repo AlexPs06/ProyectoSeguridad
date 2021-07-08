@@ -2,7 +2,9 @@
 <html>
   <head>
     <title>JavaScript RSA Encryption</title>
-    <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script src="public/index.js"></script>
+
+    <!-- <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script src="bin/jsencrypt.min.js"></script>
     <script type="text/javascript">
 
@@ -36,7 +38,8 @@
 
         });
       });
-    </script>
+    </script> -->
+
   </head>
   <body>
     <label for="privkey">Private Key</label><br/>
@@ -65,5 +68,6 @@ gwQco1KRMDSmXSMkDwIDAQAB
     <label for="input">Text to encrypt:</label><br/>
     <textarea id="input" name="input" type="text" rows=4 cols=70>This is a test!</textarea><br/>
     <input id="testme" type="button" value="Test Me!!!" /><br/>
+    <button type="button" onclick="encrypt()">encrypt</button>
   </body>
 </html>
