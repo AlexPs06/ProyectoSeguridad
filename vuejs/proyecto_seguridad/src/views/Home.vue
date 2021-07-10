@@ -71,6 +71,7 @@
 
 <script lang="ts">
   import Vue from 'vue'
+  import axios from 'axios'
   import { JSEncrypt } from 'jsencrypt' 
   // import { CryptoJS } from 'crypto-js/sha256';
   import { sha256 } from 'js-sha256';
@@ -90,46 +91,60 @@
     }),
     methods:{
       Encriptar(){
-        let encrypt = new JSEncrypt();
-        encrypt.setPublicKey(this.$data.publicKey);
-        let result  = encrypt.encrypt(this.$data.textArea);
-        alert(result);
-        console.log(result)
-        let secret = result;
-        let decrypt = new JSEncrypt()
-        // Set private key
-        decrypt.setPrivateKey(this.$data.privateKey)
-        // Declassified data
-        result = decrypt.decrypt(secret)
-        alert(result);
+        this.$data.textArea = "hola"
+        // let encrypt = new JSEncrypt();
+        // encrypt.setPublicKey(this.$data.publicKey);
+        // let result  = encrypt.encrypt(this.$data.textArea);
+        // alert(result);
+        // console.log(result)
+        // let secret = result;
+        // let decrypt = new JSEncrypt()
+        // // Set private key
+        // decrypt.setPrivateKey(this.$data.privateKey)
+        // // Declassified data
+        // result = decrypt.decrypt(secret)
+        // alert(result);
         
       },
       Firmar(){
-        let sign = new JSEncrypt();
-        sign.setPrivateKey(this.$data.privateKey)
+        const post = {
+                    privateKey:this.$data.privateKey,
+                    publicKey:this.$data.publicKey,
+                    textArea:this.$data.textArea
+            };
+        axios.post('http://127.0.0.1:3333/seguridad/archivo', post ).then(response => {
+               
+                // this.$data.loading=false;
+                console.log(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        // let sign = new JSEncrypt();
+        // sign.setPrivateKey(this.$data.privateKey)
 
-        // let sha256 = new sha256()
-        alert(sha256("hola"));
+        // // let sha256 = new sha256()
+        // alert(sha256("hola"));
 
-        // console.log(VueCryptojs.AES.encrypt("Hi There!", "Secret Passphrase").toString())
-        let signature = sign.sign(this.$data.textArea, sha256, "sha256");
+        // // console.log(VueCryptojs.AES.encrypt("Hi There!", "Secret Passphrase").toString())
+        // let signature = sign.sign(this.$data.textArea, sha256, "sha256");
 
 
-        // Verify with the public key...
-        let verify = new JSEncrypt();
-        verify.setPublicKey(this.$data.publicKey);
-        let verified = verify.verify(this.$data.textArea, signature, sha256);
+        // // Verify with the public key...
+        // let verify = new JSEncrypt();
+        // verify.setPublicKey(this.$data.publicKey);
+        // let verified = verify.verify(this.$data.textArea, signature, sha256);
 
-        // Now a simple check to see if the round-trip worked.
-        if (verified) {
-          alert('It works!!!');
-          alert(verified);
-          alert(signature);
+        // // Now a simple check to see if the round-trip worked.
+        // if (verified) {
+        //   alert('It works!!!');
+        //   alert(verified);
+        //   alert(signature);
 
-        }
-        else {
-          alert('Something went wrong....');
-        }
+        // }
+        // else {
+        //   alert('Something went wrong....');
+        // }
       }
     },
   })
