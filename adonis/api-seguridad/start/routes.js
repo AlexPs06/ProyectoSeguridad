@@ -19,7 +19,7 @@ const Route = use('Route')
 Route.group(() =>{
   //Primer parámetro es la ruta, el segundo parámetro es la función que corresponde la ruta.
   
-  Route.post('archivo','CurvasElipController.Firmar')
+  Route.post('firmar','CurvasElipController.Firmar')
   Route.get('generar','CurvasElipController.generarLlaves')
 
 // Prefix dice a quién le pertenece las rutas

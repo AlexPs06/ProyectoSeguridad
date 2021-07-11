@@ -19,8 +19,8 @@
        <v-btn   color="blue-grey" class="ma-2 white--text" v-on:click ="Firmar()"  >  
               Firmar  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
-         <v-btn  color="blue-grey" class="ma-2 white--text" v-on:click ="Encriptar()"  >  
-              Encriptar  <v-icon right dark> mdi-cloud-upload </v-icon>
+         <v-btn  color="blue-grey" class="ma-2 white--text" v-on:click ="ObtenerLlaves()"  >  
+              ObtenerLlaves  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
         
 
@@ -33,6 +33,7 @@
   <v-textarea  label="Llave privada"  hide-details="auto" v-model="privateKey" clearable class="overflow-y-auto; text-left;"> </v-textarea>
   <!--<v-text-field  label="Llave privada"  hide-details="auto" v-model="privateKey" clearable class="overflow-y-auto; text-left;"> </v-text-field>-->
   <v-textarea  label="Llave publica"  hide-details="auto" v-model="publicKey" clearable class="overflow-y-auto; text-left;"> </v-textarea>
+  <v-textarea  label="Firma de seguridad"  hide-details="auto" v-model="secureSign" clearable class="overflow-y-auto; text-left;"> </v-textarea>
   </v-sheet>
 
 
@@ -88,34 +89,34 @@
     textArea:"SOY EL TEXT AREA",
     privateKey: "a",
     publicKey: "a",
+    secureSign:"a",
     }),
     methods:{
-      Encriptar(){
-        this.$data.textArea = "hola"
-        // let encrypt = new JSEncrypt();
-        // encrypt.setPublicKey(this.$data.publicKey);
-        // let result  = encrypt.encrypt(this.$data.textArea);
-        // alert(result);
-        // console.log(result)
-        // let secret = result;
-        // let decrypt = new JSEncrypt()
-        // // Set private key
-        // decrypt.setPrivateKey(this.$data.privateKey)
-        // // Declassified data
-        // result = decrypt.decrypt(secret)
-        // alert(result);
+      ObtenerLlaves(){
+        axios.get('http://127.0.0.1:3333/seguridad/generar').then(response => {
+                
+                this.$data.secureSign = response.data.sign;
+                this.$data.publicKey = response.data.publicKey;
+                this.$data.privateKey = response.data.privateKey;
+                console.log(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            }) 
         
       },
       Firmar(){
         const post = {
                     privateKey:this.$data.privateKey,
                     publicKey:this.$data.publicKey,
-                    textArea:this.$data.textArea
+                    textArea:this.$data.textArea,
+                    sign:this.$data.secureSign
             };
-        axios.post('http://127.0.0.1:3333/seguridad/archivo', post ).then(response => {
+        axios.post('http://127.0.0.1:3333/seguridad/firmar', post ).then(response => {
                
                 // this.$data.loading=false;
                 console.log(response.data);
+                alert("esta es la firma del text area: "+ response.data.sign)
             })
             .catch(function (error) {
                 console.log(error);
