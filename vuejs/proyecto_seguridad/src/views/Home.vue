@@ -24,7 +24,15 @@
         </v-btn>
         
 
+        <v-file-input
+        v-on:change="obtenerDatos()"
+        v-model="file"
+        multiple
+        label="Subir archivo"
+      ></v-file-input>
+
     </v-toolbar>
+    
   </v-card>
 
 
@@ -73,12 +81,10 @@
 <script lang="ts">
   import Vue from 'vue'
   import axios from 'axios'
-  import { JSEncrypt } from 'jsencrypt' 
-  // import { CryptoJS } from 'crypto-js/sha256';
-  import { sha256 } from 'js-sha256';
   import { saveAs } from 'file-saver';
   import { jsPDF } from "jspdf";
   import { encode, decode } from 'js-base64';
+  // import {Filereader} from "filereader";
   // import VueCryptojs from 'vue-cryptojs'
   // import HelloWorld from '../components/HelloWorld.vue'
 
@@ -93,8 +99,34 @@
     privateKey: "a",
     publicKey: "a",
     secureSign:"a",
+     file:null,
     }),
     methods:{
+      obtenerDatos(){
+       
+        console.log(this.$data.file[0]);
+        const reader = new FileReader()
+        let texto = "";
+        reader.readAsText(this.$data.file[0]);
+        // reader.onload = e => (texto = e.target.result.toString());    
+        // console.log(reader.onload = e => (texto = e.target.result + texto));
+        
+        reader.onload = () => {
+          console.log(reader.result);
+          let string = ""; 
+          if(reader.result != null){
+            string = reader.result.valueOf().toString();
+            console.log(string.search("Llave Publica:") );
+            console.log(string.search("Llave Privada:") );
+            console.log(string.search("Certificado:") );
+            this.$data.publicKey = decode( string.substring(string.search("Llave Publica:")+16, string.search("Llave Privada:")-1) );
+            this.$data.privateKey = decode( string.substring(string.search("Llave Privada:")+16, string.search("Certificado:")-1) );
+            this.$data.secureSign = decode( string.substring(string.search("Certificado:")+14, string.length) );
+          }
+          
+        }
+        
+      },
       ObtenerLlaves(){
         axios.get('http://127.0.0.1:3333/seguridad/generar').then(response => {
                 
@@ -122,12 +154,11 @@
                     textArea:this.$data.textArea,
                     sign:this.$data.secureSign
             };
+            
         axios.post('http://127.0.0.1:3333/seguridad/firmar', post ).then(response => {
                
-                console.log(response.data);
-                alert("esta es la firma del text area: "+ response.data.sign)
-
-                
+                // console.log(response.data);
+                // alert("esta es la firma del text area: "+ response.data.sign)
                 //alert("esta es la firma del text area: "+ response.data.sign)
                 const doc = new jsPDF();
                 doc.text( 'Novus Ordo Seclorum', 70,20);
