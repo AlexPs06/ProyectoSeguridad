@@ -76,6 +76,9 @@
   import { JSEncrypt } from 'jsencrypt' 
   // import { CryptoJS } from 'crypto-js/sha256';
   import { sha256 } from 'js-sha256';
+  import { saveAs } from 'file-saver';
+  import { jsPDF } from "jspdf";
+  import { encode, decode } from 'js-base64';
   // import VueCryptojs from 'vue-cryptojs'
   // import HelloWorld from '../components/HelloWorld.vue'
 
@@ -98,7 +101,14 @@
                 this.$data.secureSign = response.data.sign;
                 this.$data.publicKey = response.data.publicKey;
                 this.$data.privateKey = response.data.privateKey;
-                console.log(response.data);
+                //Aquí el archivo
+                var llavePu = new Blob([encode(response.data.publicKey)], {type: "text/plain;charset=utf-8"});
+                saveAs(llavePu, "LlavePublica.txt");
+                var llavePrivada = new Blob([encode(response.data.privateKey)], {type: "text/plain;charset=utf-8"});
+                saveAs(llavePrivada, "LlavePrivada.txt");
+                var certificado = new Blob(["Llave Publica: \n"+encode(response.data.publicKey)+"\nLlave Privada: \n"+encode(response.data.privateKey)+
+                "\nCertificado: \n"+encode(response.data.sign)], {type: "text/plain;charset=utf-8"});
+                saveAs(certificado, "Certificado.txt");
             })
             .catch(function (error) {
                 console.log(error);
@@ -118,11 +128,21 @@
                 alert("esta es la firma del text area: "+ response.data.sign)
 
                 
+                //alert("esta es la firma del text area: "+ response.data.sign)
+                const doc = new jsPDF();
+                doc.text( 'Novus Ordo Seclorum', 70,20);
+                doc.text( 'Juro solemnemente que mis intenciones no son buenas.',20,30);
+                doc.text( this.$data.textArea,20,50);
+                var lines = doc.splitTextToSize(encode(response.data.sign), 170);
+                doc.text( lines,20,200);
+                doc.save("DocumentoFirmado.pdf");
             })
             .catch(function (error) {
                 console.log(error);
             })
  
+
+       
       }
     },
   })

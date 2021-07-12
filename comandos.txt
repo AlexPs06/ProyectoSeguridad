@@ -2,3 +2,34 @@ comandos
 openssl genrsa -out rsa_1024_priv.pem 1024 genera una llave privada de RSA de 1024
 
 openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem obtiene la llave publica de un RSA de 1024
+
+
+########
+
+adonis serve –dev
+npm run serve
+
+###############
+https://www.npmjs.com/package/file-saver
+npm install @types/file-saver --save-dev
+
+https://www.npmjs.com/package/js-base64
+npm install --save js-base64
+
+Mirad, que os revelo un secreto:
+ciertamente, no moriremos todos,
+pero todos seremos transformados;
+En un instante, 
+en un abrir y cerrar de ojos, 
+a los acordes de la última trompeta.
+Puesto que se escuchará la trompeta
+y los muertos 
+resucitarán incorruptos;
+Y nosotros seremos transformados.
+Entonces se cumplirá lo escrito:
+la muerte quedará cautiva 
+en la victoria.
+Muerte, 
+¿dónde está tu espina?
+Infiernos, 
+¿dónde está vuestra victoria?
