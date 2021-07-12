@@ -114,38 +114,15 @@
             };
         axios.post('http://127.0.0.1:3333/seguridad/firmar', post ).then(response => {
                
-                // this.$data.loading=false;
                 console.log(response.data);
                 alert("esta es la firma del text area: "+ response.data.sign)
+
+                
             })
             .catch(function (error) {
                 console.log(error);
             })
-        // let sign = new JSEncrypt();
-        // sign.setPrivateKey(this.$data.privateKey)
-
-        // // let sha256 = new sha256()
-        // alert(sha256("hola"));
-
-        // // console.log(VueCryptojs.AES.encrypt("Hi There!", "Secret Passphrase").toString())
-        // let signature = sign.sign(this.$data.textArea, sha256, "sha256");
-
-
-        // // Verify with the public key...
-        // let verify = new JSEncrypt();
-        // verify.setPublicKey(this.$data.publicKey);
-        // let verified = verify.verify(this.$data.textArea, signature, sha256);
-
-        // // Now a simple check to see if the round-trip worked.
-        // if (verified) {
-        //   alert('It works!!!');
-        //   alert(verified);
-        //   alert(signature);
-
-        // }
-        // else {
-        //   alert('Something went wrong....');
-        // }
+ 
       }
     },
   })

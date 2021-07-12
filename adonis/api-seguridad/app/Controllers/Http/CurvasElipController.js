@@ -65,21 +65,6 @@ class CurvasElipController {
             return response.status(500).json({data:e});
         });
 
-        
-        // eccrypto.sign(privateKey, msg).then(function(sig) {
-        //     console.log("Signature in DER format:", sig);
-        //     // console.dir(sig, {'maxArrayLength': null});
-
-        //     eccrypto.verify(publicKey, msg, sig).then(function() {
-        //         console.log("Signature is OK");
-        //         return response.status(200).json({firma:sig,publicKey:publicKey,privateKey:privateKey   });
-        //     }).catch(function() {
-        //         console.log("Signature is BAD");
-        //         return response.status(500).json({data:sig});
-        //     });
-        // });
-
-
       }
 
 
@@ -92,7 +77,6 @@ class CurvasElipController {
         // Corresponding uncompressed (65-byte) public key.
         var publicKey = eccrypto.getPublic(privateKey);
         
-        // console.dir(privateKey, {'maxArrayLength': null});
         let privateKeyString ="";
         for (let index = 0; index < privateKey.length; index++) {
             const element = privateKey[index];
