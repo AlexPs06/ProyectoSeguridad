@@ -16,25 +16,101 @@
     <v-toolbar dense>
       <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> esto falta checar si se queda o se va  -->
     <!-- :loading="loading" :disabled="loading" -->
-       <v-btn   color="blue-grey" class="ma-2 white--text" v-on:click ="Firmar()"  >  
+    <!-- v-on:click ="Firmar()" -->
+       <v-btn   color="blue-grey" class="ma-2 white--text"  @click="signDialog = true"  >  
               Firmar  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
-         <v-btn  color="blue-grey" class="ma-2 white--text" v-on:click ="ObtenerLlaves()"  >  
+        <!-- v-on:click ="ObtenerLlaves()" -->
+         <v-btn  color="blue-grey" class="ma-2 white--text"   @click="keysDialog = true"  >  
               ObtenerLlaves  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
         
 
-        <v-file-input
-        v-on:change="obtenerDatos()"
-        v-model="file"
-        multiple
-        label="Subir archivo"
-      ></v-file-input>
+        
 
     </v-toolbar>
     
   </v-card>
 
+   <v-dialog
+        v-model="keysDialog"
+        max-width="500px"
+        persistent
+      >
+        <v-card>
+          <v-card-title>
+            Ingrese una contraseña
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              label="Contraseña"
+              :rules="rules"
+              hide-details="auto"
+              v-model="password"
+            ></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              color="primary"
+              text
+              @click="keysDialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              text
+              :disabled="(password.length<=3)"
+              v-on:click ="ObtenerLlaves()"
+            >
+              Aceptar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog
+        v-model="signDialog"
+        max-width="500px"
+        persistent
+      >
+        <v-card>
+          <v-card-title>
+            Ingrese los archivos
+          </v-card-title>
+          <v-card-text>
+            <v-text-field
+              label="Contraseña"
+              :rules="rules"
+              hide-details="auto"
+              v-model="password"
+            ><v-icon>fa-lock</v-icon></v-text-field>
+            <v-file-input
+              v-on:change="obtenerDatos()"
+              v-model="file"
+              multiple
+              label="Subir archivo"
+            ></v-file-input>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              color="primary"
+              text
+              @click="signDialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              text
+              :disabled="(password.length<=3 || file==null)"
+              v-on:click ="Firmar()"
+            >
+              Aceptar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
   <v-sheet class="pa-12" color="grey lighten-3" elevation="24" style="max-height: 100%; "  >
 
@@ -96,43 +172,60 @@
     },
     data: () => ({
     textArea:"SOY EL TEXT AREA",
-    privateKey: "a",
-    publicKey: "a",
-    secureSign:"a",
+    privateKey: [],
+    publicKey: [],
+    secureSign:[],
+    password:"",
+    rules: [
+        value => !!value || 'Requerido.',
+        value => (value && value.length >= 3) || 'Min 3 caracteres',
+      ],
+    keysDialog: false,
      file:null,
+     signDialog:false,
     }),
     methods:{
       obtenerDatos(){
        
-        console.log(this.$data.file[0]);
-        const reader = new FileReader()
-        let texto = "";
-        reader.readAsText(this.$data.file[0]);
+        console.log(this.$data.file.length);
+        this.$data.publicKey = []
+        this.$data.privateKey = []
+        this.$data.secureSign = []
+        for (let index = 0; index < this.$data.file.length; index++) {
+            const reader = new FileReader()
+            reader.readAsText(this.$data.file[index]);
+            reader.onload = () => {
+              console.log(reader.result);
+              let string = ""; 
+              if(reader.result != null){
+                string = reader.result.valueOf().toString();
+                // console.log(string.search("Llave Publica:") );
+                // console.log(string.search("Llave Privada:") );
+                // console.log(string.search("Certificado:") );
+                this.$data.publicKey.push(decode( string.substring(string.search("Llave Publica:")+16, string.search("Llave Privada:")-1) ));
+                this.$data.privateKey.push(decode( string.substring(string.search("Llave Privada:")+16, string.search("Certificado:")-1) ));
+                this.$data.secureSign.push(decode( string.substring(string.search("Certificado:")+14, string.length) ));
+                console.log(this.$data.secureSign[index]);
+                
+              }
+            }
+        }
         // reader.onload = e => (texto = e.target.result.toString());    
         // console.log(reader.onload = e => (texto = e.target.result + texto));
-        
-        reader.onload = () => {
-          console.log(reader.result);
-          let string = ""; 
-          if(reader.result != null){
-            string = reader.result.valueOf().toString();
-            console.log(string.search("Llave Publica:") );
-            console.log(string.search("Llave Privada:") );
-            console.log(string.search("Certificado:") );
-            this.$data.publicKey = decode( string.substring(string.search("Llave Publica:")+16, string.search("Llave Privada:")-1) );
-            this.$data.privateKey = decode( string.substring(string.search("Llave Privada:")+16, string.search("Certificado:")-1) );
-            this.$data.secureSign = decode( string.substring(string.search("Certificado:")+14, string.length) );
-          }
-          
-        }
-        
       },
       ObtenerLlaves(){
-        axios.get('http://127.0.0.1:3333/seguridad/generar').then(response => {
+         const post = {
+            password:this.$data.password,
+          };
+        axios.post('http://127.0.0.1:3333/seguridad/generar',post).then(response => {
                 
-                this.$data.secureSign = response.data.sign;
-                this.$data.publicKey = response.data.publicKey;
-                this.$data.privateKey = response.data.privateKey;
+
+                this.$data.secureSign = [];
+                this.$data.publicKey = [];
+                this.$data.privateKey = [];
+                this.$data.secureSign.push(encode(response.data.sign));
+                this.$data.publicKey.push(encode(response.data.publicKey)) ;
+                this.$data.privateKey.push( encode(response.data.privateKey)) ;
                 //Aquí el archivo
                 var llavePu = new Blob([encode(response.data.publicKey)], {type: "text/plain;charset=utf-8"});
                 saveAs(llavePu, "LlavePublica.txt");
@@ -152,7 +245,8 @@
                     privateKey:this.$data.privateKey,
                     publicKey:this.$data.publicKey,
                     textArea:this.$data.textArea,
-                    sign:this.$data.secureSign
+                    sign:this.$data.secureSign,
+                    password: this.$data.password
             };
             
         axios.post('http://127.0.0.1:3333/seguridad/firmar', post ).then(response => {
@@ -160,13 +254,28 @@
                 // console.log(response.data);
                 // alert("esta es la firma del text area: "+ response.data.sign)
                 //alert("esta es la firma del text area: "+ response.data.sign)
-                const doc = new jsPDF();
-                doc.text( 'Novus Ordo Seclorum', 70,20);
-                doc.text( 'Juro solemnemente que mis intenciones no son buenas.',20,30);
-                doc.text( this.$data.textArea,20,50);
-                var lines = doc.splitTextToSize(encode(response.data.sign), 170);
-                doc.text( lines,20,200);
-                doc.save("DocumentoFirmado.pdf");
+
+                //Aquí el archivo
+                let firmas =this.$data.textArea;
+                for (let index = 0; index < response.data.sign.length; index++) {
+                  const element = response.data.sign[index];
+                  firmas = firmas +"\nFirma de seguridad " +index +"\n"+encode(element);
+                }
+
+                var certificado = new Blob([firmas]);
+                saveAs(certificado, "DocumentoFirmado.txt");
+
+                // const doc = new jsPDF();
+                // doc.text( 'Novus Ordo Seclorum', 70,20);
+                // doc.text( 'Juro solemnemente que mis intenciones no son buenas.',20,30);
+                // doc.text( this.$data.textArea,20,50);
+                // for (let index = 0; index < response.data.sign.length; index++) {
+                //   const element = response.data.sign[index];
+                //   var lines = doc.splitTextToSize(encode(element), 170);
+                //   doc.text(lines,20,200 );
+                // }
+                // // doc.text( lines,20,200);
+                // doc.save("DocumentoFirmado.pdf");
             })
             .catch(function (error) {
                 console.log(error);
