@@ -42,7 +42,7 @@ class CurvasElipController {
         let publicKeyBuffer = convertStringToBuffer(publicKeyOriginal);
 
         for (let index = 0; index < archivo.privateKey.length; index++) {
-            var msg = crypto.createHash("sha256").update(archivo.password).digest();
+            var msg = crypto.createHash("sha256").update(archivo.password[index]).digest();
             let passwordHash = bufferToiString(msg);
             let privateKeyDecrypt = CryptoJS.AES.decrypt(archivo.privateKey[index], passwordHash)
             var originalText = privateKeyDecrypt.toString(CryptoJS.enc.Utf8);
@@ -57,14 +57,14 @@ class CurvasElipController {
             }).catch(function(e) {
                 console.log("Signature is BAD");
                 arreglo=false;
-                return response.status(500).json({data:e});
+                return response.status(500).json({sign:false});
             });    
         }
         if(arreglo){
             let firmas = [];
 
             for (let index = 0; index < archivo.privateKey.length; index++) {
-                var msg = crypto.createHash("sha256").update(archivo.password).digest();
+                var msg = crypto.createHash("sha256").update(archivo.password[index]).digest();
                 let passwordHash = bufferToiString(msg);
 
                 let privateKeyDecrypt = CryptoJS.AES.decrypt(archivo.privateKey[index], passwordHash)
@@ -92,8 +92,36 @@ class CurvasElipController {
             }
             return response.status(200).json({sign:firmas});
         }
+        else{
+            return response.status(500).json({sign:false});
+        }
       }
 
+      async  comprobarArchivo({request,response}){
+            const data = request.only(['publicKey', 'secureSign', 'text'] )
+            let arreglo = false;
+            var msg = crypto.createHash("sha256").update(data.text).digest();
+
+            for (let index = 0; index < data.secureSign.length; index++) {
+                const secureSign = data.secureSign[index];
+                const publicKey = data.publicKey[index];
+                let publicKeyBuffer = convertStringToBuffer(publicKey)
+                let secureSignBuffer = convertStringToBuffer(secureSign)
+                await eccrypto.verify(publicKeyBuffer, msg, secureSignBuffer).then(function() {
+                    console.log("Signature is OK");
+                    arreglo=true;
+                }).catch(function(e) {
+                    console.log("Signature is BAD");
+                    arreglo=false;
+                    return response.status(500).json({sign:false});
+                });  
+            }
+            if (arreglo) {
+                return response.status(200).json({sign:true});
+            }
+            
+
+      }
 
       async  generarLlaves({request,response}){
         
@@ -154,9 +182,6 @@ class CurvasElipController {
 
             return response.status(200).json({sign:sigString,publicKey:publicKeyString,privateKey:ciphertext });
         });
-     
-
-
       }
 
 }

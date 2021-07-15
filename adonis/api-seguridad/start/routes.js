@@ -21,6 +21,7 @@ Route.group(() =>{
   
   Route.post('firmar','CurvasElipController.Firmar')
   Route.post('generar','CurvasElipController.generarLlaves')
+  Route.post('verificar','CurvasElipController.comprobarArchivo')
 
 // Prefix dice a quién le pertenece las rutas
 } ).prefix('seguridad')

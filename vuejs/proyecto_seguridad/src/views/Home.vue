@@ -17,12 +17,15 @@
       <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> esto falta checar si se queda o se va  -->
     <!-- :loading="loading" :disabled="loading" -->
     <!-- v-on:click ="Firmar()" -->
-       <v-btn   color="blue-grey" class="ma-2 white--text"  @click="signDialog = true"  >  
+       <v-btn   color="blue-grey" class="ma-1 white--text"  @click="signDialog = true"  >  
               Firmar  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
         <!-- v-on:click ="ObtenerLlaves()" -->
-         <v-btn  color="blue-grey" class="ma-2 white--text"   @click="keysDialog = true"  >  
-              ObtenerLlaves  <v-icon right dark> mdi-cloud-upload </v-icon>
+         <v-btn  color="blue-grey" class="ma-1 white--text"   @click="keysDialog = true"  >  
+              Obtener Llaves  <v-icon right dark> mdi-cloud-upload </v-icon>
+        </v-btn>
+        <v-btn  color="blue-grey" class="ma white--text"   @click="verifyDialog = true"  >  
+              Verificar documento  <v-icon right dark> mdi-cloud-upload </v-icon>
         </v-btn>
         
 
@@ -78,19 +81,62 @@
           <v-card-title>
             Ingrese los archivos
           </v-card-title>
+
+          
           <v-card-text>
-            <v-text-field
-              label="Contraseña"
-              :rules="rules"
-              hide-details="auto"
-              v-model="password"
-            ><v-icon>fa-lock</v-icon></v-text-field>
-            <v-file-input
-              v-on:change="obtenerDatos()"
-              v-model="file"
-              multiple
-              label="Subir archivo"
-            ></v-file-input>
+
+              <v-container>
+            <v-row>
+               <v-col cols="12">
+                 <v-checkbox
+          v-model="checkbox"
+          :label="`2 Firmas: ${checkbox.toString()}`"
+          ></v-checkbox>
+                 <v-text-field
+                  label="Contraseña 1"
+                  :rules="rules"
+                  hide-details="auto"
+                  v-model="password"
+                  type="password"
+                  >
+                </v-text-field>
+              </v-col>
+              <v-col cols="12">
+                 <v-text-field
+                 v-if="checkbox"
+                  label="Contraseña 2"
+                  :rules="rules"
+                  hide-details="auto"
+                  v-model="password2"
+                  type="password"
+                  >
+                </v-text-field>
+              </v-col>
+
+
+              <v-col cols="12">
+                 <v-file-input
+                  v-on:change="obtenerDatos(file1,file2)"
+                  v-model="file1"
+                  multiple
+                  label="Subir archivo 1"
+                ></v-file-input>
+              </v-col>
+
+              <v-col cols="12">
+                 <v-file-input
+                  v-if="checkbox"
+                  v-on:change="obtenerDatos(file1,file2)"
+                  v-model="file2"
+                  multiple
+                  label="Subir archivo 2"
+                ></v-file-input>
+              </v-col>
+            </v-row>
+              </v-container>
+
+           
+            
           </v-card-text>
           <v-card-actions>
             <v-btn
@@ -103,9 +149,91 @@
             <v-btn
               color="primary"
               text
-              :disabled="(password.length<=3 || file==null)"
               v-on:click ="Firmar()"
             >
+              <!-- :disabled="(password.length<=3 || file1==null) || (   ) " -->
+
+              Aceptar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
+
+      <v-dialog
+        v-model="verifyDialog"
+        max-width="500px"
+        persistent
+      >
+        <v-card>
+          <v-card-title>
+            Ingrese los archivos
+          </v-card-title>
+
+          
+          <v-card-text>
+
+              <v-container>
+            <v-row>
+               <v-col cols="12">
+                 <v-checkbox
+          v-model="checkbox"
+          :label="`2 Firmas: ${checkbox.toString()}`"
+          ></v-checkbox>
+                 
+              </v-col>
+
+              <v-col cols="12">
+                 <v-file-input
+                  v-on:change="obtenerDatosArchivoLlavePublica(file1,file2)"
+                  v-model="file1"
+                  multiple
+                  label="Llave publica 1"
+                ></v-file-input>
+              </v-col>
+
+              <v-col cols="12">
+                 <v-file-input
+                  v-if="checkbox"
+                  v-on:change="obtenerDatosArchivoLlavePublica(file1,file2)"
+                  v-model="file2"
+                  multiple
+                  label="Llave publica 2"
+                ></v-file-input>
+              </v-col>
+
+              <v-col cols="12">
+                 <v-file-input
+                  
+                  v-on:change="obtenerDatosArchivoFirmado()"
+                  v-model="file3"
+                  multiple
+                  label="Archivo firmado"
+                ></v-file-input>
+              </v-col>
+
+            </v-row>
+              </v-container>
+
+           
+            
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              color="primary"
+              text
+              @click="verifyDialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              text
+              v-on:click ="VerificarFirmas()"
+            >
+              <!-- :disabled="(password.length<=3 || file1==null) || (   ) " -->
+
               Aceptar
             </v-btn>
           </v-card-actions>
@@ -176,21 +304,36 @@
     publicKey: [],
     secureSign:[],
     password:"",
+    password2:"",
+    passwordArray:[],
+    checkbox:false,
     rules: [
         value => !!value || 'Requerido.',
         value => (value && value.length >= 3) || 'Min 3 caracteres',
       ],
     keysDialog: false,
-     file:null,
+    verifyDialog: false,
+     file1:null,
+     file:[],
+     file2:null,
+     file3:null,
      signDialog:false,
     }),
     methods:{
-      obtenerDatos(){
-       
-        console.log(this.$data.file.length);
+      obtenerDatos(file: any ,file2 : any ){
+        // console.log(this.$data.file.length);
+        console.log(file);
+        console.log(file2);
         this.$data.publicKey = []
         this.$data.privateKey = []
         this.$data.secureSign = []
+        this.$data.file=[]
+        if(file!=null){
+          this.$data.file.push(file[0])
+        }
+        if(file2!=null){
+          this.$data.file.push(file2[0])
+        }
         for (let index = 0; index < this.$data.file.length; index++) {
             const reader = new FileReader()
             reader.readAsText(this.$data.file[index]);
@@ -210,8 +353,58 @@
               }
             }
         }
-        // reader.onload = e => (texto = e.target.result.toString());    
-        // console.log(reader.onload = e => (texto = e.target.result + texto));
+      },
+      obtenerDatosArchivoLlavePublica(file: any ,file2 : any ){
+        // console.log(this.$data.file.length);
+        this.$data.publicKey = []
+        this.$data.file=[]
+        if(file!=null){
+          this.$data.file.push(file[0])
+        }
+        if(file2!=null){
+          this.$data.file.push(file2[0])
+        }
+        for (let index = 0; index < this.$data.file.length; index++) {
+            const reader = new FileReader()
+            reader.readAsText(this.$data.file[index]);
+            reader.onload = () => {
+              console.log(reader.result);
+              let string = ""; 
+              if(reader.result != null){
+                
+                
+                string = reader.result.valueOf().toString();
+                this.$data.publicKey.push(decode( string ));
+                console.log(this.$data.publicKey[0]);
+              }
+            }
+        }
+      },
+      obtenerDatosArchivoFirmado(){
+        this.$data.secureSign = []
+
+        const reader = new FileReader()
+            reader.readAsText(this.$data.file3[0]);
+            reader.onload = () => {
+              let string = ""; 
+              if(reader.result != null){
+                string = reader.result.valueOf().toString();
+                this.$data.textArea = string.substring(0, string.search("Firma de seguridad 0")-1 );
+                
+                if(string.search("Firma de seguridad 0") != -1 && string.search("Firma de seguridad 1") != -1 ){
+                  this.$data.secureSign.push(decode( string.substring(string.search("Firma de seguridad 0")+20, string.search("Firma de seguridad 1")) ));
+
+                  this.$data.secureSign.push(decode( string.substring(string.search("Firma de seguridad 1")+20, string.length))  );
+                  console.log(this.$data.secureSign);
+                }
+                if(string.search("Firma de seguridad 0") != -1 && string.search("Firma de seguridad 1") == -1 ){
+                  this.$data.secureSign.push(decode( string.substring(string.search("Firma de seguridad 0")+20, string.length))  );
+                  console.log(this.$data.secureSign);
+                }
+                // this.$data.secureSign.push(decode( string.substring(string.search("Firma de seguridad "+index)+14, string.length) ));
+                
+              }
+            }
       },
       ObtenerLlaves(){
          const post = {
@@ -234,27 +427,46 @@
                 var certificado = new Blob(["Llave Publica: \n"+encode(response.data.publicKey)+"\nLlave Privada: \n"+encode(response.data.privateKey)+
                 "\nCertificado: \n"+encode(response.data.sign)], {type: "text/plain;charset=utf-8"});
                 saveAs(certificado, "Certificado.txt");
+                this.$data.keysDialog =false;
             })
             .catch(function (error) {
                 console.log(error);
             }) 
         
       },
+      VerificarFirmas(){
+        const post = {
+            publicKey:this.$data.publicKey,
+            secureSign:this.$data.secureSign,
+            text:this.$data.textArea
+          };
+        axios.post('http://127.0.0.1:3333/seguridad/verificar',post).then(response => {
+          alert("Firmas validas");
+
+          })
+            .catch(function (error) {
+            alert("Firmas invalidas");
+
+                console.log(error);
+            }) 
+
+      },
       Firmar(){
+        this.$data.passwordArray=[]
+
+        this.$data.passwordArray.push(this.$data.password)
+        this.$data.passwordArray.push(this.$data.password2)
+
         const post = {
                     privateKey:this.$data.privateKey,
                     publicKey:this.$data.publicKey,
                     textArea:this.$data.textArea,
                     sign:this.$data.secureSign,
-                    password: this.$data.password
+                    password: this.$data.passwordArray
             };
             
         axios.post('http://127.0.0.1:3333/seguridad/firmar', post ).then(response => {
                
-                // console.log(response.data);
-                // alert("esta es la firma del text area: "+ response.data.sign)
-                //alert("esta es la firma del text area: "+ response.data.sign)
-
                 //Aquí el archivo
                 let firmas =this.$data.textArea;
                 for (let index = 0; index < response.data.sign.length; index++) {
@@ -264,21 +476,11 @@
 
                 var certificado = new Blob([firmas]);
                 saveAs(certificado, "DocumentoFirmado.txt");
-
-                // const doc = new jsPDF();
-                // doc.text( 'Novus Ordo Seclorum', 70,20);
-                // doc.text( 'Juro solemnemente que mis intenciones no son buenas.',20,30);
-                // doc.text( this.$data.textArea,20,50);
-                // for (let index = 0; index < response.data.sign.length; index++) {
-                //   const element = response.data.sign[index];
-                //   var lines = doc.splitTextToSize(encode(element), 170);
-                //   doc.text(lines,20,200 );
-                // }
-                // // doc.text( lines,20,200);
-                // doc.save("DocumentoFirmado.pdf");
+                this.$data.signDialog =false;
             })
             .catch(function (error) {
                 console.log(error);
+                alert("Error en las firmas")
             })
  
 
